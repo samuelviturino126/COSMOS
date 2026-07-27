@@ -45,11 +45,11 @@ class TelaLogin(tk.Frame):
         self.entrada_nome.place(x=1250.0,y=485.0,width=287.0,height=40.0)
         self.entrada_senha.place(x=1253.0,y=595.0, width=287.0,height=40.0)
         self.canvas.create_text(1238.0,558.0,anchor="nw",text="Senha",fill="#000000",font=("Inter Medium", 16 * -1))
-
-        # 🟢 CORREÇÃO: Vincula a tecla Enter diretamente aos campos de entrada para garantir a captura do evento.
         self.entrada_nome.bind('<Return>', lambda event: self.login())
         self.entrada_senha.bind('<Return>', lambda event: self.login())
-        
+    def recarregarbotoes(self):
+        self.entrada_nome.bind('<Return>', lambda event: self.login())
+        self.entrada_senha.bind('<Return>', lambda event: self.login())
     def relative_to_assets(self, path: str) -> Path:
         return self.ASSETS_PATH / Path(path)
 
@@ -69,9 +69,12 @@ class TelaLogin(tk.Frame):
                 messagebox.showinfo("Login", f"Bem-vindo, {usuario[1]}!")
                 if usuario[2] == 'admin':
                     self.controlador.mostrar_tela("TelaAdministrador")
+                    self.entrada_nome.unbind('<Return>')
+                    self.entrada_senha.unbind('<Return>')
                 else:
                     self.controlador.mostrar_tela("TelaBolsista", usuario[0], usuario[1])
+                    self.entrada_nome.unbind('<Return>')
+                    self.entrada_senha.unbind('<Return>')
             else:
                 messagebox.showerror("Erro", "Usuário ou senha incorretos.")
-        self.entrada_nome.unbind('<Return>')
-        self.entrada_senha.unbind('<Return>')
+        

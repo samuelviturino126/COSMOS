@@ -1,0 +1,4 @@
+host=10.10.97.133
+database=Registro_de_Atividades
+user=postgres
+password=123

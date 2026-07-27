@@ -66,7 +66,6 @@ class PopupNovoRegistro(Toplevel):
         return self.ASSETS_PATH / Path(path)
     
     def salvar_registro(self):
-        # ... (código de validação de dados igual ao seu) ...
         atividade = self.combo_atividade.get().strip()
         datain = self.entry_data.get().strip()
         quantidade = self.entry_quantidade.get().strip()
@@ -86,7 +85,6 @@ class PopupNovoRegistro(Toplevel):
             return
         
         try:
-            # ... (código de inserção no banco igual ao seu) ...
             conexao = conectar()
             cursor = conexao.cursor()
             cursor.execute("SELECT id FROM atividades_padrao WHERE nome = %s;", (atividade,)) 
@@ -105,16 +103,12 @@ class PopupNovoRegistro(Toplevel):
             conexao.commit()
             messagebox.showinfo("Feito!", "Atividade cadastrada com sucesso.")
             conexao.close()
-            
-            # --- MELHORIA 2 ---
-            # Fecha o popup automaticamente após o sucesso
             self.destroy() 
             
         except Exception as e:
             messagebox.showerror("Erro de Banco de Dados", f"Erro ao salvar registro. Erro: {e}")
 
     def carregar_atividades(self, event):
-        # ... (código igual ao seu, sem alterações) ...
         self.setor = self.combo_setor.get().strip()
         self.combo_atividade.set('')
         try:
@@ -136,16 +130,14 @@ class TelaBolsista(tk.Frame):
         OUTPUT_PATH = Path(__file__).parent
         self.ASSETS_PATH = OUTPUT_PATH / "telas" / "tela_principal_nova" / "imagens" 
         
-        # Dicionário para imagens ESTÁTICAS (criadas 1x)
+        #dicionário para imagens estáticas e dinâmicas
         self.imagens = {}
-        # Dicionário para imagens DINÂMICAS (evitar garbage collector)
         self.imagens_dinamicas = {} 
 
-        # --- BUG 1 (CORRIGIDO): Criar o Canvas PRIMEIRO ---
         self.canvastelabolsista = Canvas(self,bg = "#F8F8F8",height = 1080,width = 1920,bd = 0,highlightthickness = 0,relief = "ridge")
         self.canvastelabolsista.place(x = 0, y = 0)
 
-        # --- Carregar imagens ESTÁTICAS (Fundo, etc) ---
+        #imagens de fundo (Estáticas, não vão mudar)
         self.imagens['ficambotoes'] = PhotoImage(file=self.relative_to_assets("frame_ficambotoes.png"))
         self.imagens['ficamla']= PhotoImage(file=self.relative_to_assets("ficamla.png"))
         self.imagens['barra_atividades']= PhotoImage(file=self.relative_to_assets("image_3.png"))
@@ -153,14 +145,14 @@ class TelaBolsista(tk.Frame):
         self.imagens['retangulao2'] = PhotoImage(file=self.relative_to_assets("image_5.png"))
         self.imagens['calendario'] = PhotoImage(file=self.relative_to_assets("calendario.png"))
 
-        # --- Desenhar imagens ESTÁTICAS (só precisa 1x) ---
+        #Posição das imagens estáticas
         self.canvastelabolsista.create_image(961.0,40.0,image=self.imagens['ficambotoes'])
         self.canvastelabolsista.create_image(961.0,40.0,image=self.imagens['ficamla'])
         self.canvastelabolsista.create_image(960.0,601.0,image=self.imagens['barra_atividades'])
         self.canvastelabolsista.create_image(1162.0,333.0,image=self.imagens['retangulao'])
         self.canvastelabolsista.create_image(755.0,331.0,image=self.imagens['retangulao2'])
 
-        # --- Criar Botões ESTÁTICOS (só precisa 1x) ---
+        #botões estáticos (não mudam)
         self.imagens['novo_registro'] = PhotoImage(file=self.relative_to_assets("novo_registro.png"))
         self.botao_novo_registro = Button(self, image=self.imagens['novo_registro'],borderwidth=0,highlightthickness=0,command=self.abrir_tela_popup,relief="flat")
         self.botao_novo_registro.place(x=1136.0,y=18.0,width=210.0,height=42.0)
@@ -174,14 +166,13 @@ class TelaBolsista(tk.Frame):
         self.botao_sair.place(x=1486.0,y=23.5,width=34.0,height=34.0)
 
     def carregar_dados_e_construir_ui(self, id, nome):
-        # --- PASSO 1: LIMPEZA ---
-        
-        # Limpa APENAS os itens com a tag "dinamico"
-        self.canvastelabolsista.delete("dinamico")
-        # Limpa o cache de imagens da execução anterior
-        self.imagens_dinamicas.clear() 
 
-        # --- PASSO 2: ATUALIZAR DADOS ---
+        #apaga tudo que tiver a tag "dinamico"
+        #isso vai permitir a gente atualizar as telas e evitar problemas
+        self.canvastelabolsista.delete("dinamico")
+        self.imagens_dinamicas.clear() #limpa o cache
+
+        #atualizamos os dados
         self.id = id
         self.nome = nome
         self.nomes, self.setores, self.datas = [], [], []
@@ -190,13 +181,9 @@ class TelaBolsista(tk.Frame):
         self.feitas_mes = self.total_de_atividades_por_mes(self.id, self.hoje.year, self.hoje.month)
         self.ultimas_atividades_registradas()
 
-        # --- BUG 2 (CORRIGIDO) ---
-        # Se usássemos delete("all"), precisaríamos redesenhar os fundos estáticos aqui.
-        # Mas vamos usar TAGS para ser mais eficiente.
 
-        # --- PASSO 3: DESENHAR CONTEÚDO DINÂMICO (usando tags) ---
         
-        # Adiciona a tag "dinamico" a todos os itens que mudam
+        # Os itens precisam da tag dinâmico, poderia ser outra
         self.canvastelabolsista.create_text(375.0,497.0,anchor="nw",text="Últimas atividades registradas",fill="#000000",font=("Ubuntu Bold", 40 * -1), tags="dinamico")
         self.canvastelabolsista.create_text(376.0,123.0,anchor="nw",text=f"Olá, {self.nome}!",fill="#2C3638",font=("Ubuntu Bold", 24 * -1), tags="dinamico")
         
@@ -206,7 +193,7 @@ class TelaBolsista(tk.Frame):
             self.canvastelabolsista.create_text(755.0,400.0,anchor="n",text="registros hoje",fill="#2C3638",font=("Ubuntu Medium", 24 * -1), tags="dinamico")
             self.canvastelabolsista.create_text(755.0,371.0,anchor="n",text="Você ainda não fez ",fill="#2C3638",font=("Ubuntu Medium", 24 * -1), tags="dinamico")
             
-            # --- BUG 3 (CORRIGIDO): Armazenar em 'imagens_dinamicas' ---
+        #Armazenar em 'imagens_dinamicas' ---
             self.imagens_dinamicas['hoje'] = PhotoImage(file=self.relative_to_assets("sem_registros.png"))
             self.canvastelabolsista.create_image(755.0,273.0,image=self.imagens_dinamicas['hoje'], tags="dinamico")
         else:
@@ -264,9 +251,7 @@ class TelaBolsista(tk.Frame):
     def abrir_tela_popup(self):
         # Abre o popup e ESPERA ele fechar (pois é modal)
         PopupNovoRegistro(self, self.id, self.nome)
-        
-        # --- MELHORIA 1 (CORRIGIDA) ---
-        # Após o popup fechar, recarrega os dados desta tela
+        #Quando o Pop-up fechar atualiza a tela
         self.carregar_dados_e_construir_ui(self.id, self.nome)
         
     def abrir_tela_registros(self):
@@ -275,7 +260,7 @@ class TelaBolsista(tk.Frame):
     def relative_to_assets(self, path: str) -> Path:
         return self.ASSETS_PATH / Path(path)
     
-    # --- Funções de Banco (Sem alterações) ---
+    # --- Funções do banco de dados 
     def total_de_atividades_por_dia(self, usuario_id, inicio):
         conexao = conectar()
         cursor = conexao.cursor()
@@ -304,7 +289,6 @@ class TelaBolsista(tk.Frame):
         self.setores = [r[3] for r in self.resultados]
 
 
-# --- CLASSE TELA REGISTROS (COM MELHORIAS) ---
 class TelaRegistros(tk.Frame):
     def __init__(self, master, controlador):
         super().__init__(master)

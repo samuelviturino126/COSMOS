@@ -16,7 +16,7 @@ class App(tk.Tk):
 
         self.frames = {}
 
-        # --- MUDANÇA 1: Usar strings como chaves do dicionário ---
+        #Usa Strings como Chave do Dicionário para evitar importar as telas nos outros arquivos
         for F in (TelaLogin, TelaAdministrador, TelaBolsista, TelaRegistros):
             frame = F(container, self)
             # F.__name__ pega o nome da classe como uma string (ex: "TelaLogin")
@@ -25,13 +25,14 @@ class App(tk.Tk):
 
         self.mostrar_tela("TelaLogin")
 
-    # --- MUDANÇA 2: O método agora recebe o nome da tela ---
+    #Usa o nome da tela para mostrar o frame novo nas outras
     def mostrar_tela(self, nome_da_tela, *args):
         frame = self.frames[nome_da_tela] # Busca o frame usando a string
         if nome_da_tela in ("TelaBolsista", "TelaRegistros") and args:
             id, nome = args
             frame.carregar_dados_e_construir_ui(id, nome) 
-            
+        elif nome_da_tela in ("TelaLogin"):
+            frame.recarregarbotoes()
         frame.tkraise()
 
 if __name__ == "__main__":
